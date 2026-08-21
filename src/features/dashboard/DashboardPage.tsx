@@ -4,6 +4,7 @@ import { eventsApi } from "../../api/events";
 import { registrationsApi } from "../../api/registrations";
 import { useAuth } from "../../auth/AuthContext";
 import { Alert, Badge, Button, Card, EmptyState, Spinner, StatusBadge } from "../../components/ui";
+import { RegisterNowButton } from "../../components/registration/RegisterNowButton";
 import { formatCurrency } from "../../utils/format";
 import styles from "./DashboardPage.module.css";
 
@@ -32,11 +33,7 @@ export function DashboardPage() {
           <EmptyState
             title="You haven't registered yet"
             description={`Register your team for ${event.name} to get started.`}
-            action={
-              <Link to={`/register/${event.id}`}>
-                <Button>Start Registration</Button>
-              </Link>
-            }
+            action={<RegisterNowButton eventId={event.id}>Start Registration</RegisterNowButton>}
           />
         </Card>
       ) : (

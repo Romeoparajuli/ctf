@@ -1,43 +1,17 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import { eventsApi } from "../../api/events";
-import { registrationsApi } from "../../api/registrations";
 import { useAuth } from "../../auth/AuthContext";
 import { Alert, Badge, Button, Card, Spinner } from "../../components/ui";
+import { RegisterNowButton } from "../../components/registration/RegisterNowButton";
 import { formatCurrency, formatDateOnly, REGISTRATION_STATE_LABEL } from "../../utils/format";
-import { errorMessage } from "../../hooks/useAsyncData";
-import { useState } from "react";
 import styles from "./HomePage.module.css";
 
 export function HomePage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [starting, setStarting] = useState(false);
-  const [startError, setStartError] = useState<string | null>(null);
 
   const { data, isLoading, error } = useAsyncData(() => eventsApi.list(), []);
   const event = data?.items[0];
-
-  const handleRegisterNow = async () => {
-    if (!event) return;
-    if (!user) {
-      navigate("/login", { state: { from: "/" } });
-      return;
-    }
-    setStartError(null);
-    setStarting(true);
-    try {
-      const existing = await registrationsApi.mine(event.id);
-      if (!existing.registration) {
-        await registrationsApi.start(event.id);
-      }
-      navigate(`/register/${event.id}`);
-    } catch (err) {
-      setStartError(errorMessage(err, "Could not start registration."));
-    } finally {
-      setStarting(false);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -69,16 +43,10 @@ export function HomePage() {
           <h1 className={styles.title}>{event.name}</h1>
           <p className={styles.description}>{event.shortDescription ?? event.description}</p>
 
-          {startError && (
-            <Alert variant="error" title="Registration error">
-              {startError}
-            </Alert>
-          )}
-
           <div className={styles.heroActions}>
-            <Button onClick={handleRegisterNow} isLoading={starting} disabled={!canRegister} loadingText="Starting…">
+            <RegisterNowButton eventId={event.id} disabled={!canRegister}>
               {canRegister ? "Register Now" : "Registration Unavailable"}
-            </Button>
+            </RegisterNowButton>
             {user && (
               <Link to="/dashboard">
                 <Button variant="secondary">Go to dashboard</Button>

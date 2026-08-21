@@ -2,7 +2,7 @@ import { db } from "../../db/connection.js";
 import { Errors } from "../../shared/errors.js";
 import { computeRegistrationWindow } from "../../shared/registrationPeriod.js";
 import { getEventById, type EventRow } from "../events/service.js";
-import { getAcceptance } from "../terms/service.js";
+import { getAcceptance, getActiveTermsForEvent } from "../terms/service.js";
 import { notify } from "../notifications/service.js";
 import { recordAudit } from "../audit/service.js";
 import type { Request } from "express";
@@ -95,8 +95,15 @@ export function acceptTermsForRegistration(registrationId: number, userId: numbe
     return registration;
   }
   const acceptance = getAcceptance(userId, registration.event_id);
-  if (!acceptance) {
-    throw Errors.termsNotAccepted("Accept the terms and conditions before continuing.");
+  const activeTerms = getActiveTermsForEvent(registration.event_id);
+  // `acceptance.id` here is the terms_versions.id the user accepted (via the
+  // `tv.*` join in getAcceptance), not the acceptance record's own id.
+  if (!acceptance || acceptance.id !== activeTerms.id) {
+    throw Errors.termsNotAccepted(
+      acceptance
+        ? "The terms and conditions have been updated. Please review and accept the current version."
+        : "Accept the terms and conditions before continuing."
+    );
   }
   db.prepare(`UPDATE registrations SET terms_acceptance_id = ? WHERE id = ?`).run(
     acceptance.acceptance_id,

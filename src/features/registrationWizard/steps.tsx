@@ -14,55 +14,6 @@ interface StepProps {
   onAdvance: () => void;
 }
 
-export function TermsStep({ data, onAdvance }: StepProps) {
-  const [accepted, setAccepted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleContinue = async () => {
-    setError(null);
-    setIsSubmitting(true);
-    try {
-      await registrationsApi.acceptTerms(data.registration.id);
-      onAdvance();
-    } catch (err) {
-      setError(errorMessage(err, "Could not record your acceptance."));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <Card className={styles.stepCard}>
-      <h2 className={styles.stepTitle}>Terms &amp; Conditions</h2>
-      <p className={styles.stepDescription}>Read and accept the event terms before continuing.</p>
-
-      {error && (
-        <Alert variant="error" title="Could not continue">
-          {error}
-        </Alert>
-      )}
-
-      <div className={styles.termsBox} tabIndex={0}>
-        By registering for {data.event.name} you agree to compete fairly, respect the competition
-        infrastructure, and abide by the organizers' decisions. Registration fees are non-refundable once
-        payment is verified. Organizers may disqualify teams found violating competition rules.
-      </div>
-
-      <label className={styles.checkboxRow}>
-        <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
-        <span>I have read and accept the terms and conditions.</span>
-      </label>
-
-      <div className={styles.actions}>
-        <Button onClick={handleContinue} disabled={!accepted} isLoading={isSubmitting} loadingText="Saving…">
-          Continue
-        </Button>
-      </div>
-    </Card>
-  );
-}
-
 export function TeamStep({ data, onAdvance }: StepProps) {
   const [teamName, setTeamName] = useState("");
   const [institution, setInstitution] = useState("");
