@@ -5,6 +5,7 @@ export interface User {
   fullName: string;
   email: string;
   status: AccountStatus;
+  mustChangePassword: boolean;
   roles: string[];
   permissions: string[];
 }
@@ -15,6 +16,7 @@ export interface AdminUserRow {
   email: string;
   phone: string | null;
   status: AccountStatus;
+  must_change_password: number;
   created_at: string;
   roles: string[];
 }

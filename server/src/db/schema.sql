@@ -8,6 +8,10 @@ CREATE TABLE IF NOT EXISTS users (
   phone TEXT,
   password_hash TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE','INACTIVE','SUSPENDED','PENDING_VERIFICATION')),
+  -- Set whenever an admin (not the user) sets the password — account creation
+  -- or a forced reset — so a temporary/shared password can't stay valid
+  -- indefinitely. Cleared the moment the user successfully changes it.
+  must_change_password INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );

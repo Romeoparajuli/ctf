@@ -60,8 +60,7 @@ export async function verifyPassword(user: UserRow, password: string): Promise<b
 
 export async function changePassword(userId: number, newPassword: string): Promise<void> {
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
-  db.prepare(`UPDATE users SET password_hash = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?`).run(
-    passwordHash,
-    userId
-  );
+  db.prepare(
+    `UPDATE users SET password_hash = ?, must_change_password = 0, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?`
+  ).run(passwordHash, userId);
 }

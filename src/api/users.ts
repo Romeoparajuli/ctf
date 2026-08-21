@@ -1,10 +1,19 @@
 import { api } from "./client";
 import type { AdminUserRow, Paginated } from "../types/domain";
 
+export interface CreateUserInput {
+  fullName: string;
+  email: string;
+  phone?: string;
+  status?: string;
+}
+
 export const usersApi = {
   list: (params: { page?: number; pageSize?: number; search?: string }) =>
     api.get<Paginated<AdminUserRow>>("/users", params),
   get: (id: number) => api.get<{ user: AdminUserRow }>(`/users/${id}`),
+  create: (input: CreateUserInput) =>
+    api.post<{ user: AdminUserRow; temporaryPassword: string }>("/users", input),
   update: (id: number, patch: { fullName?: string; phone?: string; status?: string }) =>
     api.patch<{ user: AdminUserRow }>(`/users/${id}`, patch),
   deactivate: (id: number) => api.post<{ user: AdminUserRow }>(`/users/${id}/deactivate`),

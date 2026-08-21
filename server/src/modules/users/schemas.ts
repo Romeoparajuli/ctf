@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export const createUserSchema = z.object({
+  fullName: z.string().trim().min(2, "Full name must be at least 2 characters.").max(120),
+  email: z.string().trim().toLowerCase().email("Enter a valid email address."),
+  phone: z.string().trim().min(7, "Enter a valid phone number.").max(20).optional().or(z.literal("")),
+  status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED", "PENDING_VERIFICATION"]).optional(),
+});
+
 export const updateUserSchema = z.object({
   fullName: z.string().trim().min(2).max(120).optional(),
   phone: z.string().trim().max(20).optional(),

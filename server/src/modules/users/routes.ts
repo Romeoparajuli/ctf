@@ -9,12 +9,19 @@ import { changePassword, findUserByEmail, verifyPassword } from "../auth/service
 import {
   adminResetPassword,
   assignRole,
+  createUser,
   getUserById,
   listUsers,
   removeRole,
   updateUser,
 } from "./service.js";
-import { assignRoleSchema, changePasswordSchema, updateProfileSchema, updateUserSchema } from "./schemas.js";
+import {
+  assignRoleSchema,
+  changePasswordSchema,
+  createUserSchema,
+  updateProfileSchema,
+  updateUserSchema,
+} from "./schemas.js";
 
 export const usersRouter = Router();
 
@@ -63,6 +70,25 @@ usersRouter.get(
     const search = typeof req.query.search === "string" ? req.query.search : undefined;
     const { rows, total } = listUsers({ page, pageSize, search });
     res.json({ items: rows, page, pageSize, total });
+  })
+);
+
+usersRouter.post(
+  "/",
+  requirePermission("users.create"),
+  asyncHandler(async (req, res) => {
+    const input = createUserSchema.parse(req.body);
+    const { user, temporaryPassword } = await createUser({ ...input, phone: input.phone || undefined });
+    recordAudit({
+      userId: req.user!.id,
+      action: "USER_CREATED_BY_ADMIN",
+      entityType: "user",
+      entityId: user.id,
+      // Never write the password (temporary or otherwise) to the audit trail.
+      newValue: { fullName: user.full_name, email: user.email, status: user.status },
+      req,
+    });
+    res.status(201).json({ user, temporaryPassword });
   })
 );
 
@@ -115,9 +141,13 @@ usersRouter.post(
   })
 );
 
+// Assigning/removing a role is a role-management action, not merely a user-
+// management one — requiring roles.update too (in addition to users.update)
+// stops an Administrator who lacks roles.* from granting themselves or
+// anyone else SUPER_ADMIN via this endpoint.
 usersRouter.post(
   "/:id/roles",
-  requirePermission("users.update"),
+  requirePermission("users.update", "roles.update"),
   asyncHandler(async (req, res) => {
     const input = assignRoleSchema.parse(req.body);
     assignRole(Number(req.params.id), input.roleId);
@@ -135,7 +165,7 @@ usersRouter.post(
 
 usersRouter.delete(
   "/:id/roles/:roleId",
-  requirePermission("users.update"),
+  requirePermission("users.update", "roles.update"),
   asyncHandler(async (req, res) => {
     removeRole(Number(req.params.id), Number(req.params.roleId));
     recordAudit({

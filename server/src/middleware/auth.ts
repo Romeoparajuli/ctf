@@ -10,6 +10,7 @@ export interface AuthUser {
   fullName: string;
   email: string;
   status: string;
+  mustChangePassword: boolean;
   roles: string[];
   permissions: Permission[];
 }
@@ -25,8 +26,10 @@ declare global {
 
 function loadUserWithPermissions(userId: number): AuthUser | undefined {
   const user = db
-    .prepare(`SELECT id, full_name, email, status FROM users WHERE id = ?`)
-    .get(userId) as { id: number; full_name: string; email: string; status: string } | undefined;
+    .prepare(`SELECT id, full_name, email, status, must_change_password FROM users WHERE id = ?`)
+    .get(userId) as
+    | { id: number; full_name: string; email: string; status: string; must_change_password: number }
+    | undefined;
   if (!user) return undefined;
 
   const roles = db
@@ -49,6 +52,7 @@ function loadUserWithPermissions(userId: number): AuthUser | undefined {
     fullName: user.full_name,
     email: user.email,
     status: user.status,
+    mustChangePassword: user.must_change_password === 1,
     roles: roles.map((r) => r.name),
     permissions: permissions.map((p) => p.key) as Permission[],
   };
@@ -70,8 +74,28 @@ export function attachUser(req: Request, _res: Response, next: NextFunction): vo
   next();
 }
 
+/**
+ * Endpoints a user with a forced password change still needs: reading/ending
+ * their own session, and the one action that clears the flag. Every other
+ * authenticated endpoint is blocked until they change it — this is enforced
+ * here, not just hidden in the UI, because an admin-issued password (new
+ * account, forced reset) must not stay usable for anything else indefinitely.
+ */
+const PASSWORD_CHANGE_EXEMPT_PATHS = new Set([
+  "/api/auth/me",
+  "/api/auth/logout",
+  "/api/users/me/change-password",
+]);
+
 /** Rejects the request unless a valid authenticated user is attached. */
 export function requireAuth(req: Request, _res: Response, next: NextFunction): void {
   if (!req.user) return next(Errors.unauthenticated());
+  // req.path is relative to whichever router this runs inside (varies by
+  // call site) — req.originalUrl is the one representation that's stable
+  // regardless of mount point, which is what the exempt list is written against.
+  const fullPath = req.originalUrl.split("?")[0];
+  if (req.user.mustChangePassword && !PASSWORD_CHANGE_EXEMPT_PATHS.has(fullPath)) {
+    return next(Errors.passwordChangeRequired());
+  }
   next();
 }

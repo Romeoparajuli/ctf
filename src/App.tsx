@@ -4,9 +4,11 @@ import { ParticipantLayout } from "./components/layout/ParticipantLayout";
 import { AdminLayout } from "./components/layout/AdminLayout";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
 import { ADMIN_ENTRY_PERMISSIONS } from "./auth/roleRouting";
+import { useAuth } from "./auth/AuthContext";
 import { HomePage } from "./features/public/HomePage";
 import { LoginPage } from "./features/authPages/LoginPage";
 import { SignupPage } from "./features/authPages/SignupPage";
+import { ForcedPasswordChangePage } from "./features/authPages/ForcedPasswordChangePage";
 import { RegistrationWizard } from "./features/registrationWizard/RegistrationWizard";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { ProfilePage } from "./features/dashboard/ProfilePage";
@@ -25,6 +27,16 @@ import { SystemSettingsPage } from "./features/admin/SystemSettingsPage";
 import { NotFoundPage } from "./routes/NotFoundPage";
 
 export function App() {
+  const { user, isLoading } = useAuth();
+
+  // Server-enforced gate (see requireAuth in middleware/auth.ts) — an
+  // admin-issued password must be rotated before the account can do
+  // anything else. This takes over the whole app rather than being a
+  // route, so there's no path that accidentally bypasses it client-side.
+  if (!isLoading && user?.mustChangePassword) {
+    return <ForcedPasswordChangePage />;
+  }
+
   return (
     <Routes>
       <Route element={<PublicLayout />}>

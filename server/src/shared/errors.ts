@@ -12,6 +12,7 @@ export type ErrorCode =
   | "REGISTRATION_ALREADY_APPROVED"
   | "RESOURCE_NOT_FOUND"
   | "CONFLICT"
+  | "PASSWORD_CHANGE_REQUIRED"
   | "INTERNAL_SERVER_ERROR";
 
 const STATUS_BY_CODE: Record<ErrorCode, number> = {
@@ -28,6 +29,7 @@ const STATUS_BY_CODE: Record<ErrorCode, number> = {
   REGISTRATION_ALREADY_APPROVED: 409,
   RESOURCE_NOT_FOUND: 404,
   CONFLICT: 409,
+  PASSWORD_CHANGE_REQUIRED: 403,
   INTERNAL_SERVER_ERROR: 500,
 };
 
@@ -68,4 +70,6 @@ export const Errors = {
     new AppError("PAYMENT_ALREADY_SUBMITTED", message),
   registrationAlreadyApproved: (message = "This registration has already been approved.") =>
     new AppError("REGISTRATION_ALREADY_APPROVED", message),
+  passwordChangeRequired: (message = "You must change your password before continuing.") =>
+    new AppError("PASSWORD_CHANGE_REQUIRED", message),
 };
