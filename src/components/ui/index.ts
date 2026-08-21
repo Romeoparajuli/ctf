@@ -17,6 +17,8 @@ export type { SpinnerProps } from "./Spinner";
 export { ToastProvider, useToast } from "./ToastProvider";
 export { EmptyState } from "./EmptyState";
 export { ConfirmDialog } from "./ConfirmDialog";
+export { Modal } from "./Modal";
+export type { ModalProps } from "./Modal";
 export { StatusBadge } from "./StatusBadge";
 export { Stepper } from "./Stepper";
 export type { StepperStep } from "./Stepper";

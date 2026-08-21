@@ -10,7 +10,9 @@ function seedPermissions() {
 }
 
 function seedRoles() {
-  const systemRoles = new Set(["SUPER_ADMIN", "ADMINISTRATOR", "PARTICIPANT"]);
+  // Every role defined in the permission catalog is a system role (protected
+  // from deletion) — anything created later through the admin UI is not.
+  const systemRoles = new Set(Object.keys(ROLE_DEFINITIONS));
   for (const [name, def] of Object.entries(ROLE_DEFINITIONS)) {
     const existing = db.prepare(`SELECT id FROM roles WHERE name = ?`).get(name) as { id: number } | undefined;
     const roleId = existing
@@ -20,6 +22,9 @@ function seedRoles() {
             .prepare(`INSERT INTO roles (name, description, is_system) VALUES (?, ?, ?)`)
             .run(name, def.description, systemRoles.has(name) ? 1 : 0).lastInsertRowid
         );
+    // Keep is_system in sync even for a role row that already existed from a
+    // previous seed run (e.g. before a role was added to systemRoles).
+    db.prepare(`UPDATE roles SET is_system = ? WHERE id = ?`).run(systemRoles.has(name) ? 1 : 0, roleId);
 
     const permissions = expandRolePermissions(def.permissions);
     db.prepare(`DELETE FROM role_permissions WHERE role_id = ?`).run(roleId);

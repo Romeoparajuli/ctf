@@ -63,15 +63,21 @@ export function createRole(input: { name: string; description?: string; permissi
 }
 
 export function updateRole(id: number, patch: { description?: string; permissions?: Permission[] }): RoleView {
-  const role = db.prepare(`SELECT * FROM roles WHERE id = ?`).get(id) as { is_system: number } | undefined;
+  const role = db.prepare(`SELECT * FROM roles WHERE id = ?`).get(id) as { name: string; is_system: number } | undefined;
   if (!role) throw Errors.notFound("Role not found.");
 
   if (patch.description !== undefined) {
     db.prepare(`UPDATE roles SET description = ? WHERE id = ?`).run(patch.description, id);
   }
   if (patch.permissions !== undefined) {
-    if (role.is_system) {
-      throw Errors.forbidden("System-critical roles cannot have their permissions modified.");
+    // SUPER_ADMIN's permissions are expanded from "*" into literal rows at
+    // seed time — unlike other system roles, editing it down is a real risk
+    // of nobody being able to restore admin capability afterward. Every
+    // other system role (Administrator, Event Manager, reviewers,
+    // Participant) is intentionally tunable; only deletion is blocked for
+    // those (see deactivateRole).
+    if (role.name === "SUPER_ADMIN") {
+      throw Errors.forbidden("The SUPER_ADMIN role's permissions cannot be modified.");
     }
     setPermissions(id, patch.permissions);
   }
