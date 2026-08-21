@@ -71,7 +71,7 @@ export function AdminLayout() {
         </Link>
         <div className={styles.topActions}>
           <NotificationBell />
-          <Link to="/dashboard" className={styles.exitLink}>
+          <Link to="/" className={styles.exitLink}>
             Exit to site
           </Link>
         </div>

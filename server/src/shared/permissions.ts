@@ -51,13 +51,19 @@ export const ROLE_DEFINITIONS: Record<string, { description: string; permissions
     permissions: ["events.view", "events.create", "events.update"],
   },
   PARTICIPANT: {
+    // Deliberately excludes events.view / teams.view / registrations.view / payments.view:
+    // those exact keys also gate the admin-wide listing endpoints (GET /api/teams,
+    // /api/registrations, /api/payments). A participant's own data is reachable
+    // through ownership checks on their own routes, not these permissions — granting
+    // them here would let any participant list every team/registration/payment in
+    // the system, and would also make them misclassify as a staff account in the
+    // frontend's role-based routing (see src/auth/roleRouting.ts).
     description: "Standard participant account.",
     permissions: [
-      "events.view",
-      "teams.view", "teams.create", "teams.update",
-      "participants.view", "participants.create",
-      "registrations.view", "registrations.create", "registrations.submit",
-      "payments.submit", "payments.view",
+      "teams.create", "teams.update",
+      "participants.create",
+      "registrations.create", "registrations.submit",
+      "payments.submit",
     ],
   },
 };

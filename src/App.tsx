@@ -3,6 +3,7 @@ import { PublicLayout } from "./components/layout/PublicLayout";
 import { ParticipantLayout } from "./components/layout/ParticipantLayout";
 import { AdminLayout } from "./components/layout/AdminLayout";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
+import { ADMIN_ENTRY_PERMISSIONS } from "./auth/roleRouting";
 import { HomePage } from "./features/public/HomePage";
 import { LoginPage } from "./features/authPages/LoginPage";
 import { SignupPage } from "./features/authPages/SignupPage";
@@ -23,11 +24,6 @@ import { AuditLogsPage } from "./features/admin/AuditLogsPage";
 import { SystemSettingsPage } from "./features/admin/SystemSettingsPage";
 import { NotFoundPage } from "./routes/NotFoundPage";
 
-const ADMIN_ENTRY_PERMISSIONS = [
-  "events.view", "registrations.view", "teams.view", "payments.view",
-  "users.view", "roles.view", "analytics.view", "reports.view", "audit_logs.view",
-];
-
 export function App() {
   return (
     <Routes>
@@ -38,7 +34,7 @@ export function App() {
         <Route
           path="/register/:eventId"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute participantOnly>
               <RegistrationWizard />
             </ProtectedRoute>
           }
@@ -47,7 +43,7 @@ export function App() {
 
       <Route
         element={
-          <ProtectedRoute>
+          <ProtectedRoute participantOnly>
             <ParticipantLayout />
           </ProtectedRoute>
         }

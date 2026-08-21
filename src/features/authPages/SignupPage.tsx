@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
+import { getDefaultRoute } from "../../auth/roleRouting";
 import { errorMessage } from "../../hooks/useAsyncData";
 import { ApiError } from "../../api/client";
 import { Alert, Button, Card, FormField, Input, PasswordInput } from "../../components/ui";
@@ -25,8 +26,8 @@ export function SignupPage() {
     setFieldErrors({});
     setIsSubmitting(true);
     try {
-      await signup({ fullName, email, phone: phone || undefined, password, confirmPassword });
-      navigate("/dashboard", { replace: true });
+      const newUser = await signup({ fullName, email, phone: phone || undefined, password, confirmPassword });
+      navigate(getDefaultRoute(newUser), { replace: true });
     } catch (err) {
       if (err instanceof ApiError && err.fieldErrors) {
         setFieldErrors(err.fieldErrors);

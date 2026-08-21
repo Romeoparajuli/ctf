@@ -1,6 +1,7 @@
 import { ReactNode, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
+import { getDefaultRoute, hasAdminAccess } from "../../auth/roleRouting";
 import { registrationsApi } from "../../api/registrations";
 import { Button } from "../ui";
 import type { ButtonProps } from "../ui";
@@ -26,7 +27,13 @@ export function RegisterNowButton({ eventId, children, ...buttonProps }: Registe
 
   const handleClick = () => {
     if (!user) {
-      navigate("/login", { state: { from: window.location.pathname } });
+      navigate("/login");
+      return;
+    }
+    // Defense in depth: staff/admin accounts never enter the registration
+    // flow, even if this button ends up rendered somewhere it shouldn't be.
+    if (hasAdminAccess(user)) {
+      navigate(getDefaultRoute(user));
       return;
     }
     setModalOpen(true);

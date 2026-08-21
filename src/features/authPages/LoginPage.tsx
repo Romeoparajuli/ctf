@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
+import { getDefaultRoute } from "../../auth/roleRouting";
 import { errorMessage } from "../../hooks/useAsyncData";
 import { Alert, Button, Card, FormField, Input } from "../../components/ui";
 import styles from "./AuthPages.module.css";
@@ -8,7 +9,6 @@ import styles from "./AuthPages.module.css";
 export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation() as { state?: { from?: string } };
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,8 +20,8 @@ export function LoginPage() {
     setFormError(null);
     setIsSubmitting(true);
     try {
-      await login({ email, password });
-      navigate(location.state?.from ?? "/dashboard", { replace: true });
+      const loggedInUser = await login({ email, password });
+      navigate(getDefaultRoute(loggedInUser), { replace: true });
     } catch (err) {
       setFormError(errorMessage(err, "Login failed. Try again."));
     } finally {

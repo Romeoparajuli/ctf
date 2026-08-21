@@ -1,17 +1,25 @@
 import { ReactNode } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import { getDefaultRoute, hasAdminAccess } from "./roleRouting";
 import { Spinner } from "../components/ui";
 
 interface ProtectedRouteProps {
   children: ReactNode;
   /** If given, at least one of these permissions is required in addition to being authenticated. */
-  anyPermission?: string[];
+  anyPermission?: readonly string[];
+  /**
+   * Marks a route as belonging to the participant workspace. Staff/admin
+   * accounts (anyone with an ADMIN_ENTRY_PERMISSIONS permission) are
+   * redirected to their own workspace instead — registration status must
+   * never substitute for this role check, and this applies even on direct
+   * URL entry, not just in-app navigation.
+   */
+  participantOnly?: boolean;
 }
 
-export function ProtectedRoute({ children, anyPermission }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, anyPermission, participantOnly }: ProtectedRouteProps) {
   const { user, isLoading, hasAnyPermission } = useAuth();
-  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -22,11 +30,15 @@ export function ProtectedRoute({ children, anyPermission }: ProtectedRouteProps)
   }
 
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/login" replace />;
   }
 
   if (anyPermission && !hasAnyPermission(anyPermission)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={getDefaultRoute(user)} replace />;
+  }
+
+  if (participantOnly && hasAdminAccess(user)) {
+    return <Navigate to={getDefaultRoute(user)} replace />;
   }
 
   return <>{children}</>;

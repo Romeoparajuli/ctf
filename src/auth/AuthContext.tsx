@@ -6,11 +6,11 @@ interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
   hasPermission: (permission: string) => boolean;
-  hasAnyPermission: (permissions: string[]) => boolean;
-  login: (input: LoginInput) => Promise<void>;
-  signup: (input: SignupInput) => Promise<void>;
+  hasAnyPermission: (permissions: readonly string[]) => boolean;
+  login: (input: LoginInput) => Promise<User>;
+  signup: (input: SignupInput) => Promise<User>;
   logout: () => Promise<void>;
-  refresh: () => Promise<void>;
+  refresh: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -23,8 +23,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { user: current } = await authApi.me();
       setUser(current);
+      return current;
     } catch {
       setUser(null);
+      return null;
     }
   }, []);
 
@@ -32,15 +34,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refresh().finally(() => setIsLoading(false));
   }, [refresh]);
 
-  const login = useCallback(async (input: LoginInput) => {
-    await authApi.login(input);
-    await refresh();
-  }, [refresh]);
+  const login = useCallback(
+    async (input: LoginInput) => {
+      await authApi.login(input);
+      const current = await refresh();
+      if (!current) throw new Error("Login succeeded but the session could not be loaded.");
+      return current;
+    },
+    [refresh]
+  );
 
-  const signup = useCallback(async (input: SignupInput) => {
-    await authApi.signup(input);
-    await refresh();
-  }, [refresh]);
+  const signup = useCallback(
+    async (input: SignupInput) => {
+      await authApi.signup(input);
+      const current = await refresh();
+      if (!current) throw new Error("Signup succeeded but the session could not be loaded.");
+      return current;
+    },
+    [refresh]
+  );
 
   const logout = useCallback(async () => {
     await authApi.logout();
@@ -49,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasPermission = useCallback((permission: string) => user?.permissions.includes(permission) ?? false, [user]);
   const hasAnyPermission = useCallback(
-    (permissions: string[]) => permissions.some((p) => user?.permissions.includes(p)),
+    (permissions: readonly string[]) => permissions.some((p) => user?.permissions.includes(p)),
     [user]
   );
 

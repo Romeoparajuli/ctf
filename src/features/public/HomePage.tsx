@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import { eventsApi } from "../../api/events";
 import { useAuth } from "../../auth/AuthContext";
+import { getDefaultRoute, hasAdminAccess } from "../../auth/roleRouting";
 import { Alert, Badge, Button, Card, Spinner } from "../../components/ui";
 import { RegisterNowButton } from "../../components/registration/RegisterNowButton";
 import { formatCurrency, formatDateOnly, REGISTRATION_STATE_LABEL } from "../../utils/format";
@@ -9,6 +10,7 @@ import styles from "./HomePage.module.css";
 
 export function HomePage() {
   const { user } = useAuth();
+  const isStaff = hasAdminAccess(user);
 
   const { data, isLoading, error } = useAsyncData(() => eventsApi.list(), []);
   const event = data?.items[0];
@@ -44,13 +46,23 @@ export function HomePage() {
           <p className={styles.description}>{event.shortDescription ?? event.description}</p>
 
           <div className={styles.heroActions}>
-            <RegisterNowButton eventId={event.id} disabled={!canRegister}>
-              {canRegister ? "Register Now" : "Registration Unavailable"}
-            </RegisterNowButton>
-            {user && (
-              <Link to="/dashboard">
-                <Button variant="secondary">Go to dashboard</Button>
+            {isStaff ? (
+              // Staff/admin accounts are administrative users, not participants —
+              // they never see the participant registration CTA (Section 1).
+              <Link to={getDefaultRoute(user)}>
+                <Button>Go to Admin Dashboard</Button>
               </Link>
+            ) : (
+              <>
+                <RegisterNowButton eventId={event.id} disabled={!canRegister}>
+                  {canRegister ? "Register Now" : "Registration Unavailable"}
+                </RegisterNowButton>
+                {user && (
+                  <Link to={getDefaultRoute(user)}>
+                    <Button variant="secondary">Go to dashboard</Button>
+                  </Link>
+                )}
+              </>
             )}
           </div>
         </div>

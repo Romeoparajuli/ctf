@@ -2,6 +2,7 @@ import { ReactNode, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import styles from "./SiteHeader.module.css";
 import { useAuth } from "../../auth/AuthContext";
+import { getDefaultRoute, hasAdminAccess } from "../../auth/roleRouting";
 import { Button } from "../ui";
 
 const EVENT_NAME = "Nepal CTF";
@@ -52,14 +53,9 @@ export function SiteHeader({ navItems, extra }: { navItems: NavItem[]; extra?: R
               </button>
               {menuOpen && (
                 <div className={styles.dropdown} role="menu">
-                  <Link to="/dashboard" role="menuitem" onClick={() => setMenuOpen(false)}>
-                    Dashboard
+                  <Link to={getDefaultRoute(user)} role="menuitem" onClick={() => setMenuOpen(false)}>
+                    {hasAdminAccess(user) ? "Admin Dashboard" : "Dashboard"}
                   </Link>
-                  {user.permissions.length > 0 && user.roles.some((r) => r !== "PARTICIPANT") && (
-                    <Link to="/admin" role="menuitem" onClick={() => setMenuOpen(false)}>
-                      Admin
-                    </Link>
-                  )}
                   <button
                     type="button"
                     role="menuitem"
