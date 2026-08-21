@@ -13,8 +13,8 @@ import {
   Spinner,
 } from "../../../components/ui";
 import type { Role } from "../../../types/domain";
-import { moduleSummary } from "./permissionModules";
 import { CreateRoleModal } from "./CreateRoleModal";
+import { EditRoleModal } from "./EditRoleModal";
 import { PermissionMatrixModal } from "./PermissionMatrixModal";
 import { RoleDetailModal } from "./RoleDetailModal";
 import { RoleUsersModal } from "./RoleUsersModal";
@@ -48,12 +48,14 @@ export function RolesPage() {
 
   const [showCreate, setShowCreate] = useState(false);
   const [detailRole, setDetailRole] = useState<Role | null>(null);
+  const [editRole, setEditRole] = useState<Role | null>(null);
   const [matrixRole, setMatrixRole] = useState<Role | null>(null);
   const [usersRole, setUsersRole] = useState<Role | null>(null);
   const [deleteRole, setDeleteRole] = useState<Role | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const canCreate = hasPermission("roles.create");
+  const canEdit = hasPermission("roles.update");
   const canManagePermissions = hasPermission("roles.update");
   const canDelete = hasPermission("roles.delete");
 
@@ -128,6 +130,14 @@ export function RolesPage() {
       ) : (
         <div className={styles.tableWrap}>
           <table className={styles.table}>
+            <colgroup>
+              <col style={{ width: 180 }} />
+              <col />
+              <col style={{ width: 110 }} />
+              <col style={{ width: 100 }} />
+              <col style={{ width: 80 }} />
+              <col style={{ width: 56 }} />
+            </colgroup>
             <thead>
               <tr>
                 <th>Role</th>
@@ -135,13 +145,11 @@ export function RolesPage() {
                 <th>Type</th>
                 <th>Status</th>
                 <th>Users</th>
-                <th>Permissions</th>
                 <th />
               </tr>
             </thead>
             <tbody>
               {filteredRoles.map((role) => {
-                const { shown, extra } = moduleSummary(role.permissions);
                 return (
                   <tr key={role.id}>
                     <td>
@@ -151,7 +159,7 @@ export function RolesPage() {
                         </button>
                       </div>
                     </td>
-                    <td>
+                    <td title={role.description ?? undefined}>
                       <span className={styles.description}>{role.description ?? "—"}</span>
                     </td>
                     <td>
@@ -163,19 +171,6 @@ export function RolesPage() {
                       <Badge tone="success">Active</Badge>
                     </td>
                     <td>{role.userCount}</td>
-                    <td>
-                      {role.permissions.length === 0 ? (
-                        <Badge>No permissions</Badge>
-                      ) : (
-                        <div className={styles.moduleChips}>
-                          {shown.map((label) => (
-                            <Badge key={label}>{label}</Badge>
-                          ))}
-                          {extra > 0 && <Badge tone="accent">+{extra} more</Badge>}
-                          <span className={styles.permCount}>({role.permissions.length})</span>
-                        </div>
-                      )}
-                    </td>
                     <td
                       className={styles.actionsCell}
                       ref={(el) => {
@@ -203,6 +198,17 @@ export function RolesPage() {
                           >
                             View Role
                           </button>
+                          {canEdit && (
+                            <button
+                              role="menuitem"
+                              onClick={() => {
+                                setEditRole(role);
+                                setOpenMenuId(null);
+                              }}
+                            >
+                              Edit Role
+                            </button>
+                          )}
                           {canManagePermissions && (
                             <button
                               role="menuitem"
@@ -211,7 +217,7 @@ export function RolesPage() {
                                 setOpenMenuId(null);
                               }}
                             >
-                              Manage Permissions
+                              Edit Permissions
                             </button>
                           )}
                           <button
@@ -256,6 +262,8 @@ export function RolesPage() {
       {detailRole && (
         <RoleDetailModal role={detailRole} allPermissions={allPermissions} onClose={() => setDetailRole(null)} />
       )}
+
+      {editRole && <EditRoleModal role={editRole} onClose={() => setEditRole(null)} onSaved={refetch} />}
 
       {matrixRole && (
         <PermissionMatrixModal

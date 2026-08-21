@@ -48,18 +48,3 @@ export function groupPermissionsByModule(allPermissions: string[]): ModulePermis
 
   return Array.from(byModule.values()).sort((a, b) => a.label.localeCompare(b.label));
 }
-
-/** Distinct module display names covered by a role's permission list, capped for compact display. */
-export function moduleSummary(rolePermissions: string[], maxShown = 5): { shown: string[]; extra: number } {
-  const modules = Array.from(
-    new Set(
-      rolePermissions.map((p) => {
-        const dot = p.indexOf(".");
-        return dot === -1 ? p : p.slice(0, dot);
-      })
-    )
-  )
-    .map(formatModuleName)
-    .sort();
-  return { shown: modules.slice(0, maxShown), extra: Math.max(0, modules.length - maxShown) };
-}

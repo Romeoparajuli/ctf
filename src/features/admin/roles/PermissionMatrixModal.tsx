@@ -56,7 +56,7 @@ export function PermissionMatrixModal({ role, allPermissions, onClose, onSaved }
   return (
     <Modal
       open
-      title={`Manage Permissions — ${role.name}`}
+      title={`Edit Permissions — ${role.name}`}
       description={
         locked
           ? "The SUPER_ADMIN role's permissions cannot be modified."

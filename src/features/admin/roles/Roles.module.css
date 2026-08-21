@@ -34,8 +34,9 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
   font-size: var(--text-sm);
-  min-width: 720px;
+  min-width: 640px;
 }
 
 .table th {
@@ -90,23 +91,12 @@
 }
 
 .description {
+  display: block;
+  width: 100%;
+  min-width: 0;
   color: var(--color-text-muted);
-  max-width: 320px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.moduleChips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  max-width: 340px;
-}
-
-.permCount {
-  font-family: var(--font-mono);
-  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
