@@ -2,31 +2,48 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { termsApi } from "../../api/terms";
 import { errorMessage } from "../../hooks/useAsyncData";
-import { Alert, Button, Spinner } from "../ui";
+import { Alert, Badge, Button, Spinner } from "../ui";
 import { formatDate } from "../../utils/format";
 import styles from "./TermsAndConditionsModal.module.css";
 
+export interface PreviewTerms {
+  title: string;
+  version: string;
+  renderedHtml: string;
+}
+
 export interface TermsAndConditionsModalProps {
   open: boolean;
-  eventId: number;
+  /** Live participant mode: fetches and accepts the event's currently active terms. */
+  eventId?: number;
+  /**
+   * Admin preview mode: renders the given terms directly, no fetch, no
+   * accept call ever hits the backend — there is nothing to gate, so no
+   * checkbox is shown, just a "Close Preview" action. Takes precedence over
+   * eventId when both are supplied.
+   */
+  previewTerms?: PreviewTerms;
   /**
    * Called once acceptance has been successfully persisted on the backend.
    * May perform further async work (e.g. starting the registration); if it
-   * throws, the modal stays open and surfaces the error message.
+   * throws, the modal stays open and surfaces the error message. Unused in
+   * preview mode.
    */
-  onAccepted: () => void | Promise<void>;
+  onAccepted?: () => void | Promise<void>;
   onCancel: () => void;
 }
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export function TermsAndConditionsModal({ open, eventId, onAccepted, onCancel }: TermsAndConditionsModalProps) {
+export function TermsAndConditionsModal({ open, eventId, previewTerms, onAccepted, onCancel }: TermsAndConditionsModalProps) {
+  const isPreview = previewTerms !== undefined;
+
   // Single source of truth for acceptance — nothing else in this component
   // tracks whether the user has agreed to the terms.
   const [termsAccepted, setTermsAccepted] = useState(false);
 
-  const [terms, setTerms] = useState<{ version: string; content: string } | null>(null);
+  const [terms, setTerms] = useState<{ title: string; version: string; renderedHtml: string } | null>(null);
   const [priorAcceptance, setPriorAcceptance] = useState<{ version: string; accepted_at: string } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,14 +62,27 @@ export function TermsAndConditionsModal({ open, eventId, onAccepted, onCancel }:
     previouslyFocused.current = document.activeElement as HTMLElement | null;
     setSubmitError(null);
     setIsSubmitting(false);
-    setIsLoading(true);
     setLoadError(null);
+
+    if (isPreview) {
+      setTerms(previewTerms);
+      setPriorAcceptance(null);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!eventId) return;
+    setIsLoading(true);
 
     let cancelled = false;
     Promise.all([termsApi.getActive(eventId), termsApi.getAcceptance(eventId)])
       .then(([activeRes, acceptanceRes]) => {
         if (cancelled) return;
-        setTerms({ version: activeRes.terms.version, content: activeRes.terms.content });
+        setTerms({
+          title: activeRes.terms.title,
+          version: activeRes.terms.version,
+          renderedHtml: activeRes.terms.renderedHtml,
+        });
         if (acceptanceRes.acceptance) {
           setPriorAcceptance({
             version: acceptanceRes.acceptance.version,
@@ -77,7 +107,8 @@ export function TermsAndConditionsModal({ open, eventId, onAccepted, onCancel }:
     return () => {
       cancelled = true;
     };
-  }, [open, eventId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, eventId, isPreview]);
 
   useEffect(() => {
     if (!open) return;
@@ -126,13 +157,17 @@ export function TermsAndConditionsModal({ open, eventId, onAccepted, onCancel }:
   };
 
   const handleAccept = async () => {
+    if (isPreview) {
+      onCancel();
+      return;
+    }
     // The button is disabled unless termsAccepted is true, so this should be
     // unreachable in practice — guard anyway rather than trusting the UI alone.
     if (!termsAccepted) {
       setSubmitError("Accept the terms and conditions before continuing.");
       return;
     }
-    if (!terms) return;
+    if (!terms || !eventId || !onAccepted) return;
 
     setSubmitError(null);
     setIsSubmitting(true);
@@ -159,7 +194,7 @@ export function TermsAndConditionsModal({ open, eventId, onAccepted, onCancel }:
       >
         <div className={styles.header}>
           <h2 id="terms-modal-title" className={styles.title}>
-            Terms &amp; Conditions
+            {terms?.title || "Terms & Conditions"}
           </h2>
           <button
             type="button"
@@ -173,8 +208,16 @@ export function TermsAndConditionsModal({ open, eventId, onAccepted, onCancel }:
         </div>
 
         <p id="terms-modal-description" className={styles.description}>
-          Please read and accept the event terms before continuing with registration.
+          {isPreview
+            ? "Preview — this is exactly what participants will see. No acceptance is recorded here."
+            : "Please read and accept the event terms before continuing with registration."}
         </p>
+
+        {isPreview && (
+          <div style={{ marginBottom: "var(--space-4)" }}>
+            <Badge tone="accent">Preview Mode</Badge>
+          </div>
+        )}
 
         {loadError && <Alert variant="error">{loadError}</Alert>}
         {submitError && (
@@ -190,9 +233,7 @@ export function TermsAndConditionsModal({ open, eventId, onAccepted, onCancel }:
         ) : (
           terms && (
             <>
-              <div className={styles.termsBox} tabIndex={0}>
-                {terms.content}
-              </div>
+              <div className={styles.termsBox} tabIndex={0} dangerouslySetInnerHTML={{ __html: terms.renderedHtml }} />
               <p className={styles.versionNote}>
                 Version {terms.version}
                 {priorAcceptance &&
@@ -200,30 +241,34 @@ export function TermsAndConditionsModal({ open, eventId, onAccepted, onCancel }:
                   ` · You accepted this version on ${formatDate(priorAcceptance.accepted_at)}`}
               </p>
 
-              <label className={styles.checkboxRow}>
-                <input
-                  type="checkbox"
-                  checked={termsAccepted}
-                  onChange={(e) => handleCheckboxChange(e.target.checked)}
-                />
-                <span>I have read and accept the terms and conditions.</span>
-              </label>
+              {!isPreview && (
+                <label className={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => handleCheckboxChange(e.target.checked)}
+                  />
+                  <span>I have read and accept the terms and conditions.</span>
+                </label>
+              )}
             </>
           )
         )}
 
         <div className={styles.actions}>
-          <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
-            Cancel
-          </Button>
+          {!isPreview && (
+            <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
+              Cancel
+            </Button>
+          )}
           <Button
             type="button"
-            disabled={!termsAccepted || isLoading || !terms}
+            disabled={!isPreview && (!termsAccepted || isLoading || !terms)}
             isLoading={isSubmitting}
             loadingText="Saving…"
             onClick={handleAccept}
           >
-            Accept &amp; Continue
+            {isPreview ? "Close Preview" : "Accept & Continue"}
           </Button>
         </div>
       </div>

@@ -79,10 +79,19 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE TABLE IF NOT EXISTS terms_versions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT '',
   version TEXT NOT NULL,
+  -- Raw admin-authored Markdown. Never rendered directly — always passed
+  -- through markdownToSafeHtml() (marked + sanitize-html allowlist) before
+  -- being served to participants or previewed by an admin.
   content TEXT NOT NULL,
-  is_active INTEGER NOT NULL DEFAULT 1,
+  status TEXT NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT','PUBLISHED','ARCHIVED')),
+  effective_date TEXT,
+  created_by INTEGER REFERENCES users(id),
+  published_by INTEGER REFERENCES users(id),
+  published_at TEXT,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   UNIQUE(event_id, version)
 );
 
@@ -92,6 +101,8 @@ CREATE TABLE IF NOT EXISTS terms_acceptances (
   event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
   terms_version_id INTEGER NOT NULL REFERENCES terms_versions(id),
   accepted_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  ip_address TEXT,
+  user_agent TEXT,
   UNIQUE(user_id, event_id, terms_version_id)
 );
 

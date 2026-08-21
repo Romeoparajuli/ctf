@@ -64,14 +64,69 @@
   flex: 1;
   min-height: 160px;
   overflow-y: auto;
+  overflow-wrap: anywhere;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-4);
   color: var(--color-text-muted);
   line-height: var(--leading-normal);
   font-size: var(--text-sm);
-  white-space: pre-line;
   margin-bottom: var(--space-4);
+}
+
+.termsBox :global(h1),
+.termsBox :global(h2),
+.termsBox :global(h3),
+.termsBox :global(h4) {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  line-height: var(--leading-tight);
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.termsBox :global(h1:first-child),
+.termsBox :global(h2:first-child),
+.termsBox :global(h3:first-child) {
+  margin-top: 0;
+}
+
+.termsBox :global(p) {
+  margin: 0 0 var(--space-3);
+}
+
+.termsBox :global(ul),
+.termsBox :global(ol) {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-5);
+}
+
+.termsBox :global(li) {
+  margin-bottom: var(--space-1);
+}
+
+.termsBox :global(a) {
+  color: var(--color-primary);
+}
+
+.termsBox :global(blockquote) {
+  border-left: 3px solid var(--color-border-strong);
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-3);
+  color: var(--color-text-faint);
+}
+
+.termsBox :global(hr) {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-4) 0;
+}
+
+.termsBox :global(code) {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--color-surface);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-sm);
 }
 
 .versionNote {

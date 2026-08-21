@@ -20,6 +20,7 @@ import { TeamsPage } from "./features/admin/TeamsPage";
 import { PaymentsQueuePage } from "./features/admin/PaymentsQueuePage";
 import { UsersPage } from "./features/admin/UsersPage";
 import { RolesPage } from "./features/admin/roles/RolesPage";
+import { TermsPage } from "./features/admin/terms/TermsPage";
 import { AnalyticsPage } from "./features/admin/AnalyticsPage";
 import { ReportsPage } from "./features/admin/reports/ReportsPage";
 import { AuditLogsPage } from "./features/admin/AuditLogsPage";
@@ -80,6 +81,7 @@ export function App() {
         <Route path="payments" element={<PaymentsQueuePage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="roles" element={<RolesPage />} />
+        <Route path="terms" element={<TermsPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />

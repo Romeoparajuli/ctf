@@ -22,7 +22,10 @@ const NAV_GROUPS: AdminNavGroup[] = [
   },
   {
     label: "Event Management",
-    items: [{ to: "/admin/events", label: "Events", permission: "events.view" }],
+    items: [
+      { to: "/admin/events", label: "Events", permission: "events.view" },
+      { to: "/admin/terms", label: "Terms & Conditions", permission: "terms.view" },
+    ],
   },
   {
     label: "Registration",
