@@ -21,7 +21,7 @@ import { PaymentsQueuePage } from "./features/admin/PaymentsQueuePage";
 import { UsersPage } from "./features/admin/UsersPage";
 import { RolesPage } from "./features/admin/roles/RolesPage";
 import { AnalyticsPage } from "./features/admin/AnalyticsPage";
-import { ReportsPage } from "./features/admin/ReportsPage";
+import { ReportsPage } from "./features/admin/reports/ReportsPage";
 import { AuditLogsPage } from "./features/admin/AuditLogsPage";
 import { SystemSettingsPage } from "./features/admin/SystemSettingsPage";
 import { NotFoundPage } from "./routes/NotFoundPage";
