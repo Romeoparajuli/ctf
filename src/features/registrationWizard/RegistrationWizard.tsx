@@ -45,7 +45,17 @@ export function RegistrationWizard() {
     );
   }
 
-  if (error || !data?.registration) {
+  if (error) {
+    return (
+      <div className="container" style={{ paddingBlock: "var(--space-16)" }}>
+        <Alert variant="error" title="Could not load your registration">
+          {error}
+        </Alert>
+      </div>
+    );
+  }
+
+  if (!data?.registration) {
     return (
       <div className="container" style={{ paddingBlock: "var(--space-16)" }}>
         <Alert variant="info" title="No registration found">

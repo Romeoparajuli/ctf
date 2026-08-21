@@ -1,26 +1,11 @@
-import { useState } from "react";
-import { errorMessage, useAsyncData } from "../../hooks/useAsyncData";
+import { useAsyncData } from "../../hooks/useAsyncData";
 import { ctfdApi } from "../../api/ctfd";
 import { Alert, Badge, Button, Card, Spinner } from "../../components/ui";
 import { formatDate } from "../../utils/format";
 import styles from "./Admin.module.css";
 
 export function SystemSettingsPage() {
-  const { data, isLoading, refetch } = useAsyncData(() => ctfdApi.status(), []);
-  const [error, setError] = useState<string | null>(null);
-  const [checking, setChecking] = useState(false);
-
-  const handleCheck = async () => {
-    setError(null);
-    setChecking(true);
-    try {
-      await refetch();
-    } catch (err) {
-      setError(errorMessage(err, "Could not check CTFd status."));
-    } finally {
-      setChecking(false);
-    }
-  };
+  const { data, isLoading, error, refetch } = useAsyncData(() => ctfdApi.status(), []);
 
   return (
     <div>
@@ -65,7 +50,7 @@ export function SystemSettingsPage() {
           </>
         )}
         <div style={{ marginTop: "var(--space-4)" }}>
-          <Button variant="secondary" onClick={handleCheck} isLoading={checking}>
+          <Button variant="secondary" onClick={refetch} isLoading={isLoading}>
             Re-check connectivity
           </Button>
         </div>

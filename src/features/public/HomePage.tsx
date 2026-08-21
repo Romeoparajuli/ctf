@@ -23,7 +23,17 @@ export function HomePage() {
     );
   }
 
-  if (error || !event) {
+  if (error) {
+    return (
+      <div className="container" style={{ paddingBlock: "var(--space-16)" }}>
+        <Alert variant="error" title="Could not load the event">
+          {error}
+        </Alert>
+      </div>
+    );
+  }
+
+  if (!event) {
     return (
       <div className="container" style={{ paddingBlock: "var(--space-16)" }}>
         <Alert variant="info" title="No event published yet">

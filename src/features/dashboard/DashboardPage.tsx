@@ -10,15 +10,23 @@ import styles from "./DashboardPage.module.css";
 
 export function DashboardPage() {
   const { user } = useAuth();
-  const { data: eventData, isLoading: eventsLoading } = useAsyncData(() => eventsApi.list(), []);
+  const { data: eventData, isLoading: eventsLoading, error: eventsError, refetch: refetchEvents } = useAsyncData(
+    () => eventsApi.list(),
+    []
+  );
   const event = eventData?.items[0];
 
-  const { data: regData, isLoading: regLoading } = useAsyncData(
-    () => (event ? registrationsApi.mine(event.id) : Promise.resolve({ registration: null })),
-    [event?.id]
-  );
+  const {
+    data: regData,
+    isLoading: regLoading,
+    error: regError,
+    refetch: refetchReg,
+  } = useAsyncData(() => (event ? registrationsApi.mine(event.id) : Promise.resolve({ registration: null })), [
+    event?.id,
+  ]);
 
   const isLoading = eventsLoading || regLoading;
+  const loadError = eventsError ?? regError;
 
   return (
     <div className={`container ${styles.wrap}`}>
@@ -26,6 +34,23 @@ export function DashboardPage() {
 
       {isLoading ? (
         <Spinner label="Loading dashboard" />
+      ) : loadError ? (
+        <Card>
+          <Alert variant="error" title="Could not load your dashboard">
+            {loadError}
+          </Alert>
+          <div style={{ marginTop: "var(--space-4)" }}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                refetchEvents();
+                refetchReg();
+              }}
+            >
+              Retry
+            </Button>
+          </div>
+        </Card>
       ) : !event ? (
         <EmptyState title="No event available" description="There are no published events right now." />
       ) : !regData?.registration ? (

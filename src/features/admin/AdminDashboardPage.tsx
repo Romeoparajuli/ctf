@@ -8,10 +8,11 @@ import styles from "./Admin.module.css";
 
 export function AdminDashboardPage() {
   const { data: kpis, isLoading: kpisLoading, error: kpisError } = useAsyncData(() => analyticsApi.kpis(), []);
-  const { data: pending, isLoading: pendingLoading } = useAsyncData(
-    () => registrationsApi.list({ status: "ADMIN_REVIEW", pageSize: 5 }),
-    []
-  );
+  const {
+    data: pending,
+    isLoading: pendingLoading,
+    error: pendingError,
+  } = useAsyncData(() => registrationsApi.list({ status: "ADMIN_REVIEW", pageSize: 5 }), []);
 
   return (
     <div>
@@ -67,7 +68,9 @@ export function AdminDashboardPage() {
 
       <Card>
         <h2 className={styles.sectionTitle}>Pending Admin Review</h2>
-        {pendingLoading ? (
+        {pendingError ? (
+          <Alert variant="error">{pendingError}</Alert>
+        ) : pendingLoading ? (
           <Spinner label="Loading queue" />
         ) : pending && pending.items.length > 0 ? (
           <div className={styles.tableWrap}>
