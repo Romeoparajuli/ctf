@@ -31,6 +31,8 @@ const STATUS_TONE: Record<string, BadgeTone> = {
   REGISTRATION_CLOSED: "neutral",
   ONGOING: "info",
   COMPLETED: "neutral",
+  // Terms & Conditions
+  ARCHIVED: "neutral",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -59,6 +61,7 @@ const STATUS_LABEL: Record<string, string> = {
   REGISTRATION_CLOSED: "Registration closed",
   ONGOING: "Ongoing",
   COMPLETED: "Completed",
+  ARCHIVED: "Archived",
 };
 
 export function StatusBadge({ status }: { status: string }) {

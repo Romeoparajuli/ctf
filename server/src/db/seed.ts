@@ -77,13 +77,20 @@ function seedEvent() {
       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'REGISTRATION_OPEN')`
     )
     .run(
-      "Nepal CTF 2026",
+      "Nepal Cyber Shield 2026",
       slug,
-      "Nepal's premier capture-the-flag competition, bringing together the country's best security talent for a weekend of offense, defense and reverse engineering.",
-      "Nepal's premier CTF competition.",
-      "Standard CTF rules apply. No attacking competition infrastructure. No sharing flags. Be respectful.",
-      "NPR 300,000 across top three teams",
-      "Kathmandu, Nepal",
+      "Nepal Cyber Shield 2026 is designed to create a competitive platform where cybersecurity enthusiasts can demonstrate their technical knowledge, analytical thinking, and ability to solve real-world-inspired security challenges.\n\n" +
+        "The competition provides participants with an opportunity to explore cybersecurity through hands-on challenges while encouraging responsible and ethical use of technical skills.\n\n" +
+        "From discovering emerging cyber talent to promoting ethical hacking and strengthening cybersecurity awareness, Nepal Cyber Shield aims to contribute toward a more secure digital Nepal.",
+      "National-level Capture the Flag competition.",
+      "Follow the official competition rules.\n" +
+        "Perform all activities only within systems and environments provided for the competition.\n" +
+        "Respect other participants, organizers, and competition infrastructure.\n" +
+        "Do not attack systems or infrastructure outside the authorized competition environment.\n" +
+        "Do not share flags, solutions, credentials, or restricted competition information unless explicitly permitted.\n" +
+        "Follow all instructions provided by the organizers.",
+      "NPR 300,000",
+      "", // Final venue: To Be Announced — never invent one.
       eventStart,
       eventEnd,
       registrationStart,
@@ -99,9 +106,11 @@ function seedEvent() {
   const eventId = Number(result.lastInsertRowid);
 
   db.prepare(
-    `INSERT INTO terms_versions (event_id, version, content, is_active) VALUES (?, '1.0', ?, 1)`
+    `INSERT INTO terms_versions (event_id, title, version, content, status, published_at, updated_at)
+     VALUES (?, ?, '1.0', ?, 'PUBLISHED', strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now'))`
   ).run(
     eventId,
+    "Nepal CTF 2026 Registration Terms",
     "By registering for Nepal CTF 2026 you agree to compete fairly, respect the competition infrastructure, and abide by the organizers' decisions. Registration fees are non-refundable once payment is verified."
   );
 

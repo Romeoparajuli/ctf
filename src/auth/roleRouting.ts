@@ -9,7 +9,7 @@ import type { User } from "../types/domain";
 export const ADMIN_ENTRY_PERMISSIONS = [
   "events.view", "registrations.view", "teams.view", "payments.view",
   "users.view", "roles.view", "analytics.view", "reports.view",
-  "audit_logs.view", "system_settings.view",
+  "audit_logs.view", "system_settings.view", "terms.view",
 ] as const;
 
 /** Permissions that warrant the full admin dashboard rather than the narrower event-manager view. */

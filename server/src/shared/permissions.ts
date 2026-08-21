@@ -11,6 +11,13 @@ export const PERMISSIONS = [
   "analytics.view",
   "audit_logs.view",
   "system_settings.view", "system_settings.update",
+  // "terms.acceptance_view" (not "terms.acceptance.view" as in the original
+  // spec text) to match this app's existing module.action convention —
+  // every other multi-word action already uses an underscore (e.g.
+  // system_settings.view), and the admin Roles UI's permission matrix
+  // splits a key on its *first* dot to derive the module column.
+  "terms.view", "terms.create", "terms.update", "terms.delete",
+  "terms.publish", "terms.archive", "terms.preview", "terms.acceptance_view",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -32,6 +39,8 @@ export const ROLE_DEFINITIONS: Record<string, { description: string; permissions
       "reports.view", "reports.export",
       "analytics.view",
       "audit_logs.view",
+      "terms.view", "terms.create", "terms.update",
+      "terms.publish", "terms.archive", "terms.preview", "terms.acceptance_view",
     ],
   },
   REGISTRATION_REVIEWER: {
@@ -48,7 +57,11 @@ export const ROLE_DEFINITIONS: Record<string, { description: string; permissions
   },
   EVENT_MANAGER: {
     description: "Can create and manage events, registration configuration and event content.",
-    permissions: ["events.view", "events.create", "events.update"],
+    permissions: [
+      "events.view", "events.create", "events.update",
+      "terms.view", "terms.create", "terms.update",
+      "terms.publish", "terms.archive", "terms.preview", "terms.acceptance_view",
+    ],
   },
   PARTICIPANT: {
     // Deliberately excludes events.view / teams.view / registrations.view / payments.view:

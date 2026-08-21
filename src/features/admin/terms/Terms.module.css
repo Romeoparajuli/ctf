@@ -34,9 +34,8 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
   font-size: var(--text-sm);
-  min-width: 640px;
+  min-width: 760px;
 }
 
 .table th {
@@ -67,14 +66,13 @@
   background: var(--color-surface);
 }
 
-.roleNameCell {
+.titleCell {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-weight: 500;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.roleNameButton {
+.titleButton {
   background: none;
   border: none;
   padding: 0;
@@ -85,19 +83,14 @@
   text-align: left;
 }
 
-.roleNameButton:hover {
+.titleButton:hover {
   color: var(--color-primary);
   text-decoration: underline;
 }
 
-.description {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  color: var(--color-text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.metaLine {
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
 }
 
 .actionsCell {
@@ -165,104 +158,52 @@
   margin: var(--space-2) 0;
 }
 
-/* Permission matrix */
-.matrixTable {
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.contentEditor {
   width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-  min-width: 640px;
-}
-
-.matrixTable th {
-  text-align: center;
+  min-height: 260px;
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--color-text-faint);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
   padding: var(--space-3);
-  border-bottom: 1px solid var(--color-border);
-  position: sticky;
-  top: 0;
-  background: var(--color-surface-raised);
-}
-
-.matrixTable th:first-child {
-  text-align: left;
-}
-
-.matrixTable td {
-  padding: var(--space-3);
-  border-bottom: 1px solid var(--color-border);
-  text-align: center;
-  vertical-align: top;
-}
-
-.matrixTable td:first-child {
-  text-align: left;
-  font-weight: 500;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
   color: var(--color-text);
-  white-space: nowrap;
+  resize: vertical;
 }
 
-.matrixTable tr:last-child td {
-  border-bottom: none;
+.contentEditor:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
-.dash {
+.editorHint {
+  font-size: var(--text-xs);
   color: var(--color-text-faint);
+  margin: var(--space-1) 0 0;
 }
 
-.otherCell {
+.statusChoice {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  align-items: flex-start;
-  text-align: left;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
 }
 
-.otherCheckbox {
+.statusChoice label {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--text-xs);
-  white-space: nowrap;
-}
-
-.detailModule {
-  margin-bottom: var(--space-5);
-}
-
-.detailModuleTitle {
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  color: var(--color-text);
-  margin: 0 0 var(--space-2);
-}
-
-.detailPermList {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.detailPermItem {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
-.detailPermItemChecked {
-  color: var(--color-text);
-}
-
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: var(--space-4);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  cursor: pointer;
 }

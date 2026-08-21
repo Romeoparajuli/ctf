@@ -5,7 +5,7 @@ import { useAuth } from "../../auth/AuthContext";
 import { getDefaultRoute, hasAdminAccess } from "../../auth/roleRouting";
 import { Button } from "../ui";
 
-const EVENT_NAME = "Nepal CTF";
+const EVENT_NAME = "Nepal Cyber Shield";
 
 export interface NavItem {
   to: string;
@@ -26,16 +26,22 @@ export function SiteHeader({ navItems, extra }: { navItems: NavItem[]; extra?: R
         </Link>
 
         <nav className={styles.nav} aria-label="Primary">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) => `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`}
-            >
-              {item.label}
-            </NavLink>
-          ))}
+          {navItems.map((item) =>
+            item.to.includes("#") ? (
+              <a key={item.to} href={item.to} className={styles.navLink}>
+                {item.label}
+              </a>
+            ) : (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) => `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`}
+              >
+                {item.label}
+              </NavLink>
+            )
+          )}
         </nav>
 
         <div className={styles.actions}>
