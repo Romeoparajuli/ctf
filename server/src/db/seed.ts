@@ -99,9 +99,11 @@ function seedEvent() {
   const eventId = Number(result.lastInsertRowid);
 
   db.prepare(
-    `INSERT INTO terms_versions (event_id, version, content, is_active) VALUES (?, '1.0', ?, 1)`
+    `INSERT INTO terms_versions (event_id, title, version, content, status, published_at, updated_at)
+     VALUES (?, ?, '1.0', ?, 'PUBLISHED', strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now'))`
   ).run(
     eventId,
+    "Nepal CTF 2026 Registration Terms",
     "By registering for Nepal CTF 2026 you agree to compete fairly, respect the competition infrastructure, and abide by the organizers' decisions. Registration fees are non-refundable once payment is verified."
   );
 
