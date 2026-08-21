@@ -1,0 +1,142 @@
+.header {
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(5, 7, 10, 0.82);
+}
+
+.inner {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-base);
+  color: var(--color-text);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.logo:hover {
+  color: var(--color-primary);
+}
+
+.logoMark {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--color-primary);
+  box-shadow: 0 0 12px rgba(47, 227, 208, 0.7);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex: 1;
+  overflow-x: auto;
+}
+
+.navLink {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  padding-block: var(--space-2);
+  border-bottom: 2px solid transparent;
+}
+
+.navLink:hover {
+  color: var(--color-text);
+}
+
+.navLinkActive {
+  color: var(--color-text);
+  border-bottom-color: var(--color-primary);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  white-space: nowrap;
+}
+
+.textLink {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.textLink:hover {
+  color: var(--color-text);
+}
+
+.userMenu {
+  position: relative;
+}
+
+.userButton {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+}
+
+.userButton:hover {
+  border-color: var(--color-border-strong);
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--space-2));
+  min-width: 160px;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2);
+  z-index: 20;
+}
+
+.dropdown a,
+.dropdown button {
+  display: block;
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  text-decoration: none;
+  background: none;
+  border: none;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.dropdown a:hover,
+.dropdown button:hover {
+  background: var(--color-surface);
+}
+
+@media (max-width: 720px) {
+  .nav {
+    display: none;
+  }
+}
