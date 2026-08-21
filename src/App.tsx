@@ -1,19 +1,84 @@
 import { Route, Routes } from "react-router-dom";
-import { PageShell } from "./components/layout/PageShell";
-import { CreateTeamPage } from "./features/registration/CreateTeamPage";
-import { JoinTeamPage } from "./features/registration/JoinTeamPage";
-import { LandingPage } from "./features/registration/LandingPage";
-import { SuccessPage } from "./features/registration/SuccessPage";
+import { PublicLayout } from "./components/layout/PublicLayout";
+import { ParticipantLayout } from "./components/layout/ParticipantLayout";
+import { AdminLayout } from "./components/layout/AdminLayout";
+import { ProtectedRoute } from "./auth/ProtectedRoute";
+import { HomePage } from "./features/public/HomePage";
+import { LoginPage } from "./features/authPages/LoginPage";
+import { SignupPage } from "./features/authPages/SignupPage";
+import { RegistrationWizard } from "./features/registrationWizard/RegistrationWizard";
+import { DashboardPage } from "./features/dashboard/DashboardPage";
+import { ProfilePage } from "./features/dashboard/ProfilePage";
+import { AdminDashboardPage } from "./features/admin/AdminDashboardPage";
+import { EventsPage } from "./features/admin/EventsPage";
+import { RegistrationsQueuePage } from "./features/admin/RegistrationsQueuePage";
+import { RegistrationReviewPage } from "./features/admin/RegistrationReviewPage";
+import { TeamsPage } from "./features/admin/TeamsPage";
+import { PaymentsQueuePage } from "./features/admin/PaymentsQueuePage";
+import { UsersPage } from "./features/admin/UsersPage";
+import { RolesPage } from "./features/admin/RolesPage";
+import { AnalyticsPage } from "./features/admin/AnalyticsPage";
+import { ReportsPage } from "./features/admin/ReportsPage";
+import { AuditLogsPage } from "./features/admin/AuditLogsPage";
+import { SystemSettingsPage } from "./features/admin/SystemSettingsPage";
+import { NotFoundPage } from "./routes/NotFoundPage";
+
+const ADMIN_ENTRY_PERMISSIONS = [
+  "events.view", "registrations.view", "teams.view", "payments.view",
+  "users.view", "roles.view", "analytics.view", "reports.view", "audit_logs.view",
+];
 
 export function App() {
   return (
-    <PageShell>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/register/create" element={<CreateTeamPage />} />
-        <Route path="/register/join" element={<JoinTeamPage />} />
-        <Route path="/register/success" element={<SuccessPage />} />
-      </Routes>
-    </PageShell>
+    <Routes>
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route
+          path="/register/:eventId"
+          element={
+            <ProtectedRoute>
+              <RegistrationWizard />
+            </ProtectedRoute>
+          }
+        />
+      </Route>
+
+      <Route
+        element={
+          <ProtectedRoute>
+            <ParticipantLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/dashboard/profile" element={<ProfilePage />} />
+      </Route>
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute anyPermission={ADMIN_ENTRY_PERMISSIONS}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboardPage />} />
+        <Route path="events" element={<EventsPage />} />
+        <Route path="registrations" element={<RegistrationsQueuePage />} />
+        <Route path="registrations/:id" element={<RegistrationReviewPage />} />
+        <Route path="teams" element={<TeamsPage />} />
+        <Route path="payments" element={<PaymentsQueuePage />} />
+        <Route path="users" element={<UsersPage />} />
+        <Route path="roles" element={<RolesPage />} />
+        <Route path="analytics" element={<AnalyticsPage />} />
+        <Route path="reports" element={<ReportsPage />} />
+        <Route path="audit-logs" element={<AuditLogsPage />} />
+        <Route path="settings" element={<SystemSettingsPage />} />
+      </Route>
+
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 }

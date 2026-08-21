@@ -23,3 +23,27 @@
   color: var(--color-accent);
   background: rgba(143, 123, 255, 0.08);
 }
+
+.success {
+  border-color: rgba(61, 220, 151, 0.4);
+  color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.warning {
+  border-color: rgba(242, 184, 75, 0.4);
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+
+.error {
+  border-color: rgba(255, 107, 107, 0.4);
+  color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+.info {
+  border-color: rgba(90, 184, 255, 0.4);
+  color: var(--color-info);
+  background: var(--color-info-bg);
+}

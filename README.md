@@ -1,67 +1,91 @@
-# Nepal CTF — Team Registration
+# Nepal CTF — Event Registration & Management Platform
 
-Custom registration frontend for a CTFd-backed CTF. React + Vite + TypeScript,
-no UI framework — a small hand-rolled design system (CSS variables + CSS
-Modules) tuned for a technical, high-contrast competition feel.
-
-## Run it
-
-```bash
-npm install
-npm run dev       # http://localhost:5173
-```
-
-The app runs entirely against an **in-memory mock API** by default — no
-CTFd instance required. A seed team already exists so the Join flow is
-demoable: name `CYBER PHANTOMS`, password `letmein123`.
-
-## Wiring up a real CTFd instance
-
-Copy `.env.example` to `.env`, set:
-
-```
-VITE_CTFD_BASE_URL=https://your-ctfd-instance.example
-VITE_USE_MOCK_API=false
-```
-
-Then read the header comment in `src/services/api/httpClient.ts` before
-relying on it — it documents CTFd's actual auth model for a decoupled
-frontend (session cookie + CSRF nonce scraped from CTFd's own HTML, *not*
-the personal-API-token scheme from the getting-started docs, which is meant
-for scripts a logged-in user already has a token for). The one likely
-integration hole: `/teams/join` is CTFd's own web route, not a versioned
-`/api/v1/...` JSON endpoint — its exact response shape isn't in CTFd's
-public API docs, so verify it against your deployed CTFd version (or swap
-in whatever your instance actually exposes) before going live. Everything
-else (`/api/v1/register`, `/api/v1/teams`, `/api/v1/teams/fields`) follows
-CTFd's documented REST conventions.
+A production-oriented registration platform for Nepal CTF: authentication, RBAC,
+event management, terms acceptance, team/participant registration, PhonePe QR
+payment workflow, administrative approval, dashboards, analytics, reports, audit
+logging, and a CTFd integration boundary. React + Vite + TypeScript frontend,
+Express + TypeScript + SQLite backend.
 
 ## Architecture
 
 ```
-Pages (LandingPage, CreateTeamPage, JoinTeamPage, SuccessPage)
-  -> useTeamRegistration()          feature hook: form -> API, status/errors out
-  -> services/api/index.ts          picks mockApi or ctfdApi by env
-  -> services/api/{mock,ctfd}Api.ts both implement the same RegistrationApi contract
-  -> services/api/httpClient.ts     (ctfdApi only) session+nonce handling, error normalization
+src/            React frontend (Vite, TypeScript, CSS Modules)
+  api/          Typed fetch wrappers, one module per backend domain
+  auth/         AuthContext (session) + ProtectedRoute guards
+  components/   Reusable UI kit (components/ui) + layouts (components/layout)
+  features/     Route-level feature screens (public, auth, registration wizard,
+                participant dashboard, admin)
+  hooks/        useAsyncData (loading/error/data), error formatting
+  types/        Shared domain types mirroring backend response shapes
+
+server/         Express backend
+  src/db/       SQLite schema (schema.sql), migration runner, seed script
+  src/modules/  One folder per domain: auth, users, roles, events, terms,
+                registrations, payments, teams, notifications, audit,
+                analytics, reports, ctfd
+  src/middleware/  auth (session), authorize (permission checks), rate
+                    limiting, centralized error handler
+  src/shared/   AppError/error codes, permission catalog + role defaults,
+                registration-period computation
 ```
 
-Screens never call the API directly or see CTFd's raw error shape —
-`RegistrationApiError` always carries human-readable `formError` /
-`fieldErrors`, and the mock adapter mirrors CTFd's real constraints (unique
-team name, unique email, team capacity) so those states are exercisable
-without a live backend.
+Business rules live on the backend and are re-derived from persisted state on
+every request (registration fee, registration window, permission checks) —
+the frontend never trusts client-submitted fees or authorization decisions.
 
-Every participant needs a CTFd **user account** before they can create or
-join a team (that's how CTFd itself works — see
-docs.ctfd.io/tutorials/teams/creating-and-joining-teams), so both
-Create Team and Join Team collect account fields + team fields in one
-combined submit rather than a separate signup step.
+## Run it
 
-## Design system
+Two processes: the API server and the Vite dev server. The dev server proxies
+`/api/*` to `http://localhost:4000`, so cookies and requests work same-origin
+without CORS configuration.
 
-`src/styles/tokens.css` is the single source of truth for color,
-type, spacing, radius, and motion — every component reads from it rather
-than hardcoding values. Reusable primitives live in
-`src/components/ui/` (Button, Input, PasswordInput, FormField, Card,
-Alert, Badge, Spinner).
+```bash
+# 1. Backend
+cd server
+npm install
+npm run seed     # creates schema, seeds roles/permissions/admin/demo event
+npm run dev       # http://localhost:4000
+
+# 2. Frontend (separate terminal, from repo root)
+npm install
+npm run dev       # http://localhost:5173
+```
+
+The seed script prints a super admin login (default `admin@nepalctf.org` /
+`ChangeMe123!` unless `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` are set) —
+change this password immediately in any shared environment. It also seeds one
+demo event ("Nepal CTF 2026") with registration currently open.
+
+Copy `server/.env.example` to `server/.env` and `.env.example` to `.env` to
+override defaults (session secret, DB path, CORS origin, CTFd base URL).
+
+## Registration lifecycle
+
+```
+DRAFT → TERMS_ACCEPTED → TEAM_CREATED → PARTICIPANTS_ADDED → PAYMENT_PENDING
+  → PAYMENT_SUBMITTED → PAYMENT_VERIFIED → ADMIN_REVIEW → APPROVED | REJECTED
+```
+
+Every transition is recorded in `registration_status_history` /
+`payment_status_history`. Payment verification and registration approval are
+separate steps performed by different permissions (`payments.verify` vs.
+`registrations.approve`), matching the spec's separation-of-duties requirement.
+
+## RBAC
+
+Permission-based, not role-name checks. Seeded roles: `SUPER_ADMIN` (all
+permissions), `ADMINISTRATOR`, `REGISTRATION_REVIEWER`, `PAYMENT_REVIEWER`,
+`EVENT_MANAGER`, `PARTICIPANT`. Permissions are enforced in Express middleware
+(`requirePermission`) — frontend permission checks (`useAuth().hasPermission`)
+are UI-visibility only, never the source of truth.
+
+## What's intentionally minimal in this pass
+
+- **CTFd sync** is a stubbed, isolated integration (`server/src/modules/ctfd`)
+  that never blocks approval — the `/teams/join` endpoint shape must be
+  verified against a live CTFd instance before it's relied on.
+- **Notifications** are in-app only; email is a documented future channel.
+- **Reports** export CSV; Excel/PDF export are not implemented.
+- Automated test coverage is minimal by design for this pass — the workflow
+  was verified end-to-end via direct API calls (signup → terms → team →
+  participants → payment → verification → approval) during development.
